@@ -1,0 +1,59 @@
+# Environment files and local secrets
+.env
+.env.*
+!.env.example
+.secrets/
+secrets/
+*.secret
+*.secrets
+*-secret.*
+*-secrets.*
+*.pem
+*.key
+*.p12
+*.jks
+
+# Maven and Java build output
+target/
+*.class
+*.jar
+*.war
+*.ear
+!.mvn/wrapper/maven-wrapper.jar
+
+# Maven wrapper generated metadata
+.mvn/timing.properties
+
+# Local Spring configuration
+src/main/resources/application-local.properties
+src/main/resources/application-secret.properties
+src/main/resources/application-prod.properties
+
+# IDEs and editors
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.vscode/
+out/
+
+# Logs and runtime output
+*.log
+logs/
+hs_err_pid*
+replay_pid*
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+*.mv.db
+*.trace.db
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
