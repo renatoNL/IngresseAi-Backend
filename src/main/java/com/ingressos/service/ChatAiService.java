@@ -14,6 +14,7 @@ import java.util.Map;
 
 @Service
 public class ChatAiService {
+
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
     private final String apiKey;
@@ -29,22 +30,26 @@ public class ChatAiService {
     }
 
     public String responder(String mensagem) {
-        if (apiKey.isBlank()) {
+        if (apiKey == null || apiKey.isBlank() || apiKey.equals("sua-chave-api") || apiKey.equals("${GEMINI_API_KEY}")) {
             return "O chat está pronto. Configure GEMINI_API_KEY para ativar as respostas da IA.";
         }
 
         try {
             String corpo = objectMapper.writeValueAsString(Map.of(
                     "contents", new Object[]{Map.of("parts", new Object[]{Map.of("text", mensagem)})}));
+
             HttpRequest requisicao = HttpRequest.newBuilder()
                     .uri(URI.create("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(corpo))
                     .build();
+
             HttpResponse<String> resposta = httpClient.send(requisicao, HttpResponse.BodyHandlers.ofString());
+
             if (resposta.statusCode() >= 400) {
                 throw new IllegalStateException("A API de IA retornou HTTP " + resposta.statusCode());
             }
+
             return extrairTexto(resposta.body());
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
@@ -57,6 +62,7 @@ public class ChatAiService {
     private String extrairTexto(String corpo) throws IOException {
         JsonNode raiz = objectMapper.readTree(corpo);
         JsonNode texto = raiz.at("/candidates/0/content/parts/0/text");
+
         if (texto.isMissingNode()) {
             throw new IllegalStateException("A resposta da IA não contém texto.");
         }

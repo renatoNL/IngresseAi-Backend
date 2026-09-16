@@ -12,7 +12,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = "spring.datasource.password=root")
+@SpringBootTest(properties = {
+    "spring.datasource.password=root",
+    "chat.ai.api-key="
+})
 @AutoConfigureMockMvc
 class IngressosApplicationTests {
 

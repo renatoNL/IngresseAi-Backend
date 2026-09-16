@@ -15,12 +15,13 @@ import java.util.Date;
 
 @Service
 public class UsuarioService {
+
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
-    
+
     @Value("${jwt.secret}")
     private String jwtSecret;
-    
+
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
@@ -30,30 +31,42 @@ public class UsuarioService {
     }
 
     public Usuario cadastrarUsuario(UsuarioRequestDTO dto) {
+        if (!"COMPRADOR".equals(dto.getTipo()) && !"VENDEDOR".equals(dto.getTipo())) {
+            throw new RegraNegocioException("Tipo de usuário não reconhecido.");
+        }
+        if ("VENDEDOR".equals(dto.getTipo()) && (dto.getCpfCnpj() == null || !dto.getCpfCnpj().matches("\\d{14}") || dto.getCpfCnpj().matches("(\\d)\\1{13}"))) {
+            throw new RegraNegocioException("CNPJ inválido.");
+        }
+        if ("COMPRADOR".equals(dto.getTipo()) && (dto.getCpfCnpj() == null || !dto.getCpfCnpj().matches("\\d{11}") || dto.getCpfCnpj().matches("(\\d)\\1{10}"))) {
+            throw new RegraNegocioException("CPF inválido.");
+        }
+
         if (usuarioRepository.findByCpfCnpj(dto.getCpfCnpj()).isPresent()) {
             throw new RegraNegocioException("CPF/CNPJ já cadastrado.");
         }
+
         Usuario usuario = new Usuario();
         usuario.setNomeCompleto(dto.getNomeCompleto());
         usuario.setCpfCnpj(dto.getCpfCnpj());
         usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
-        usuario.setTipo(dto.getTipo()); 
+        usuario.setTipo(dto.getTipo());
+
         return usuarioRepository.save(usuario);
     }
 
     public String autenticar(String cpfCnpj, String senha) {
         Usuario usuario = usuarioRepository.findByCpfCnpj(cpfCnpj)
                 .orElseThrow(() -> new RegraNegocioException("Credenciais inválidas."));
-                
+
         if (!passwordEncoder.matches(senha, usuario.getSenha())) {
             throw new RegraNegocioException("Credenciais inválidas.");
         }
-        
+
         String role = usuario.getTipo().startsWith("ROLE_") ? usuario.getTipo() : "ROLE_" + usuario.getTipo();
-        
+
         return Jwts.builder()
-                .setSubject(usuario.getId().toString()) 
-                .claim("role", role) 
+                .setSubject(usuario.getId().toString())
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
