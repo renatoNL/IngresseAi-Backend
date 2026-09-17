@@ -62,7 +62,6 @@ public class ChatAiService {
     private String extrairTexto(String corpo) throws IOException {
         JsonNode raiz = objectMapper.readTree(corpo);
         JsonNode texto = raiz.at("/candidates/0/content/parts/0/text");
-
         if (texto.isMissingNode()) {
             throw new IllegalStateException("A resposta da IA não contém texto.");
         }

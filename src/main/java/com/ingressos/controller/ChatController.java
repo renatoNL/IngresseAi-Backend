@@ -1,18 +1,16 @@
 package com.ingressos.controller;
 
-import com.ingressos.dto.ChatMessageDTO;
 import com.ingressos.service.ChatAiService;
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
-@RequestMapping("/chat")
+@RequestMapping("/api/chat")
+@CrossOrigin(origins = "*") // Substitua "*" pela URL do seu frontend em produção
 public class ChatController {
+
     private final ChatAiService chatAiService;
 
     public ChatController(ChatAiService chatAiService) {
@@ -20,7 +18,9 @@ public class ChatController {
     }
 
     @PostMapping
-    public Map<String, String> conversar(@RequestBody @Valid ChatMessageDTO dto) {
-        return Map.of("resposta", chatAiService.responder(dto.mensagem()));
+    public ResponseEntity<Map<String, String>> conversar(@RequestBody Map<String, String> request) {
+        String mensagem = request.get("mensagem");
+        String resposta = chatAiService.responder(mensagem);
+        return ResponseEntity.ok(Map.of("resposta", resposta));
     }
 }
