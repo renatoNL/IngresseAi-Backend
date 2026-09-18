@@ -9,8 +9,11 @@ import com.ingressos.repository.IngressoRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -35,5 +38,29 @@ class EventoServiceTest {
         when(eventoRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(RecursoNaoEncontradoException.class, () -> service.cancelarEvento(99L));
         verify(eventoRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    void deveListarApenasEventosDoVendedorInformado() {
+        Evento evento = new Evento();
+        evento.setId(10L);
+        evento.setVendedorId(7L);
+        when(eventoRepository.findByVendedorIdOrderByIdAsc(7L)).thenReturn(List.of(evento));
+
+        List<Evento> resultado = service.listarEventos(7L);
+
+        assertEquals(1, resultado.size());
+        assertEquals(7L, resultado.get(0).getVendedorId());
+        verify(eventoRepository).findByVendedorIdOrderByIdAsc(7L);
+        verify(eventoRepository, never()).findAll();
+    }
+
+    @Test
+    void deveRetornarListaVaziaQuandoVendedorNaoPossuiEventos() {
+        when(eventoRepository.findByVendedorIdOrderByIdAsc(8L)).thenReturn(List.of());
+
+        List<Evento> resultado = service.listarEventos(8L);
+
+        assertTrue(resultado.isEmpty());
     }
 }

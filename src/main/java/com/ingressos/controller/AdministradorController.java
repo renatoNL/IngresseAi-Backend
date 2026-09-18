@@ -42,8 +42,8 @@ public class AdministradorController {
     }
 
     @GetMapping
-    @Operation(summary = "Listar todos os eventos")
+    @Operation(summary = "Listar eventos do vendedor autenticado")
     public List<Evento> listarEventos() {
-        return eventoService.listarEventos();
+        return eventoService.listarEventos(getUsuarioAutenticadoId());
     }
 }

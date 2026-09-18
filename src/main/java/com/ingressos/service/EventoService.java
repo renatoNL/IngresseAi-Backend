@@ -69,8 +69,8 @@ public class EventoService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Evento não encontrado."));
     }
 
-    public List<Evento> listarEventos() {
-        return eventoRepository.findAll();
+    public List<Evento> listarEventos(Long vendedorId) {
+        return eventoRepository.findByVendedorIdOrderByIdAsc(vendedorId);
     }
 
     public List<Map<String, Object>> listarOfertas() {
