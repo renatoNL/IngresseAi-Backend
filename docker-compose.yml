@@ -41,6 +41,7 @@ services:
       - DB_PASSWORD=admin
       - JWT_SECRET=${JWT_SECRET:-chave-super-secreta-para-jwt-com-mais-de-32-caracteres}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.6-flash}
     depends_on:
       db:
         condition: service_healthy
