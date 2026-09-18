@@ -1,13 +1,14 @@
 package com.ingressos.controller;
 
+import com.ingressos.dto.ChatMessageDTO;
 import com.ingressos.service.ChatAiService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chat")
-@CrossOrigin(origins = "*")
 public class ChatController {
     private final ChatAiService chatAiService;
 
@@ -16,9 +17,8 @@ public class ChatController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> conversar(@RequestBody Map<String, String> request) {
-        String mensagem = request.get("mensagem");
-        String resposta = chatAiService.responder(mensagem);
+    public ResponseEntity<Map<String, String>> conversar(@Valid @RequestBody ChatMessageDTO request) {
+        String resposta = chatAiService.responder(request.mensagem());
         return ResponseEntity.ok(Map.of("resposta", resposta));
     }
 }

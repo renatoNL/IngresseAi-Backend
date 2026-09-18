@@ -9,7 +9,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
-import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -45,15 +45,15 @@ class IngressoRepositoryTest extends AbstractIntegrationTest {
         
         entityManager.persistAndFlush(ingresso);
 
-        Optional<Ingresso> resultado = ingressoRepository.findByEventoId(evento.getId());
+        List<Ingresso> resultado = ingressoRepository.findByEventoIdOrderByIdAsc(evento.getId());
         
-        assertTrue(resultado.isPresent());
-        assertEquals(100, resultado.get().getQuantidade());
+        assertFalse(resultado.isEmpty());
+        assertEquals(100, resultado.get(0).getQuantidade());
     }
 
     @Test
     void naoDeveEncontrarIngressoParaEventoSemIngresso() {
-        Optional<Ingresso> resultado = ingressoRepository.findByEventoId(99L);
-        assertFalse(resultado.isPresent());
+        List<Ingresso> resultado = ingressoRepository.findByEventoIdOrderByIdAsc(99L);
+        assertTrue(resultado.isEmpty());
     }
 }

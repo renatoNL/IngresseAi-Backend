@@ -1,6 +1,8 @@
 package com.ingressos.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ingressos.exception.IntegracaoIaException;
+import org.springframework.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -23,7 +25,7 @@ class ChatAiServiceTest {
 
     @BeforeEach
     void setup() {
-        chatAiService = new ChatAiService(new ObjectMapper(), "fake-key", "gemini-2.0-flash");
+        chatAiService = new ChatAiService(new ObjectMapper(), "fake-key", "gemini-3.6-flash");
         httpClientMock = mock(HttpClient.class);
         ReflectionTestUtils.setField(chatAiService, "httpClient", httpClientMock);
     }
@@ -33,7 +35,7 @@ class ChatAiServiceTest {
         when(httpClientMock.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                 .thenThrow(new IOException("Sem rede"));
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> chatAiService.responder("Ola"));
-        assertTrue(exception.getMessage().contains("Não foi possível consultar a IA."));
+        assertTrue(exception.getMessage().contains("Não foi possível conectar ao serviço de IA."));
     }
 
     @Test
@@ -41,6 +43,31 @@ class ChatAiServiceTest {
         when(httpClientMock.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                 .thenThrow(new HttpTimeoutException("Timeout"));
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> chatAiService.responder("Ola"));
-        assertTrue(exception.getMessage().contains("Não foi possível consultar a IA."));
+        assertTrue(exception.getMessage().contains("A IA demorou demais para responder."));
+    }
+
+    @Test
+    void deveClassificarCredencialInvalidaDaIA() throws Exception {
+        HttpResponse<String> response = mock(HttpResponse.class);
+        when(response.statusCode()).thenReturn(401);
+        when(httpClientMock.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(response);
+
+        IntegracaoIaException exception = assertThrows(IntegracaoIaException.class,
+                () -> chatAiService.responder("Ola"));
+
+        assertTrue(exception.getMessage().contains("credenciais"));
+        assertTrue(exception.getStatus() == HttpStatus.BAD_GATEWAY);
+    }
+
+    @Test
+    void deveInformarQuandoChaveDaIANaoEstiverConfigurada() {
+        ChatAiService serviceSemChave = new ChatAiService(new ObjectMapper(), "", "gemini-3.6-flash");
+
+        IntegracaoIaException exception = assertThrows(IntegracaoIaException.class,
+                () -> serviceSemChave.responder("Ola"));
+
+        assertTrue(exception.getMessage().contains("GEMINI_API_KEY"));
+        assertTrue(exception.getStatus() == HttpStatus.SERVICE_UNAVAILABLE);
     }
 }

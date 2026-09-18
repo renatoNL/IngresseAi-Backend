@@ -76,7 +76,10 @@ public class EventoService {
     public List<Map<String, Object>> listarOfertas() {
         return eventoRepository.findAll().stream()
                 .map(evento -> {
-                    Ingresso ingresso = ingressoRepository.findByEventoId(evento.getId()).orElse(null);
+                Ingresso ingresso = ingressoRepository.findByEventoIdOrderByIdAsc(evento.getId()).stream()
+                    .filter(item -> item.getQuantidade() != null && item.getQuantidade() > 0)
+                    .findFirst()
+                    .orElse(null);
                     Map<String, Object> oferta = new HashMap<>();
                     oferta.put("id", evento.getId());
                     oferta.put("titulo", evento.getTitulo());

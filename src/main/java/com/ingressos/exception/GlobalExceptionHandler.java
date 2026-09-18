@@ -62,6 +62,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(IntegracaoIaException.class)
+    public ResponseEntity<Map<String, String>> handleIntegracaoIa(IntegracaoIaException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(Map.of("erro", ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleAllExceptions(Exception ex) {
         Map<String, String> error = new HashMap<>();

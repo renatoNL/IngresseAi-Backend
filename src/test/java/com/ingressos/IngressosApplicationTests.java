@@ -35,10 +35,10 @@ class IngressosApplicationTests {
     @Test
     @WithMockUser(username = "1", roles = "COMPRADOR")
     void deveResponderChatSemChaveConfigurada() throws Exception {
-        mockMvc.perform(post("/chat")
+        mockMvc.perform(post("/api/chat")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"mensagem\":\"Quais eventos existem?\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resposta").isNotEmpty());
+            .andExpect(status().isServiceUnavailable())
+            .andExpect(jsonPath("$.erro").value("Serviço de IA indisponível: GEMINI_API_KEY não configurada."));
     }
 }
