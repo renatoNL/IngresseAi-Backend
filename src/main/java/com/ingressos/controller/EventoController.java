@@ -1,6 +1,9 @@
 package com.ingressos.controller;
 
+import com.ingressos.model.Evento;
 import com.ingressos.service.EventoService;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,5 +22,11 @@ public class EventoController {
     @GetMapping
     public List<Map<String, Object>> listarOfertas() {
         return eventoService.listarOfertas();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Evento>> listarMeusEventos() {
+        List<Evento> eventos = eventoService.listarEventosDoVendedor();
+        return ResponseEntity.ok(eventos); // Retornará uma array vazia [] se não houver eventos
     }
 }

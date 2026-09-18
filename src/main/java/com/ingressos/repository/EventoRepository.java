@@ -8,5 +8,7 @@ import java.util.List;
 
 @Repository
 public interface EventoRepository extends JpaRepository<Evento, Long> {
-	List<Evento> findByVendedorIdOrderByIdAsc(Long vendedorId);
+    List<Evento> findByVendedorIdOrderByIdAsc(Long vendedorId);
+    long countByVendedorId(Long vendedorId);
+    List<Evento> findByVendedorId(Long vendedorId);
 }
