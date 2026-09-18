@@ -70,7 +70,7 @@ public class IngressoService {
     }
 
     public List<IngressoCompradoResponse> listarMeusIngressos(Long compradorId) {
-        return ingressoCompradoRepository.findByCompradorIdOrderByIdAsc(compradorId).stream()
+        return ingressoCompradoRepository.findByCompradorIdAndStatusOrderByIdAsc(compradorId, "CONFIRMADA").stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }

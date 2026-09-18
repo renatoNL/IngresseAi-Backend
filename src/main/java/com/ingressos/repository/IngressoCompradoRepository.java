@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface IngressoCompradoRepository extends JpaRepository<IngressoComprado, Long> {
-    List<IngressoComprado> findByCompradorIdOrderByIdAsc(Long compradorId);
+    List<IngressoComprado> findByCompradorIdAndStatusOrderByIdAsc(Long compradorId, String status);
 
     Optional<IngressoComprado> findByIdAndCompradorId(Long id, Long compradorId);
 }
