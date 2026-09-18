@@ -19,14 +19,13 @@ public class EventoController {
         this.eventoService = eventoService;
     }
 
-    @GetMapping
+    @GetMapping("/eventos/ofertas")
     public List<Map<String, Object>> listarOfertas() {
         return eventoService.listarOfertas();
     }
 
-    @GetMapping
-    public ResponseEntity<List<Evento>> listarMeusEventos() {
-        List<Evento> eventos = eventoService.listarEventosDoVendedor();
-        return ResponseEntity.ok(eventos); // Retornará uma array vazia [] se não houver eventos
+    @GetMapping("/eventos/meus")
+    public List<Evento> listarMeusEventos() {
+        return eventoService.listarEventosDoVendedor();
     }
 }
