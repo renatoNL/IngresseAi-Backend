@@ -3,14 +3,12 @@ package com.ingressos.controller;
 import com.ingressos.service.ChatAiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chat")
-@CrossOrigin(origins = "*") // Substitua "*" pela URL do seu frontend em produção
+@CrossOrigin(origins = "*")
 public class ChatController {
-
     private final ChatAiService chatAiService;
 
     public ChatController(ChatAiService chatAiService) {

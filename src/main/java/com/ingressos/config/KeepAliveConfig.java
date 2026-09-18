@@ -1,4 +1,4 @@
-package com.seuprojeto.config;
+package com.ingressos.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;

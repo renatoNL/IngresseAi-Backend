@@ -1,5 +1,6 @@
 package com.ingressos.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -16,6 +17,7 @@ public class EventoRequestDTO {
     private String tipoEvento;
     
     @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dataEvento;
     
     @NotNull
@@ -37,4 +39,4 @@ public class EventoRequestDTO {
     public void setQuantidadeIngressos(Integer quantidadeIngressos) { this.quantidadeIngressos = quantidadeIngressos; }
     public Double getValorIngresso() { return valorIngresso; }
     public void setValorIngresso(Double valorIngresso) { this.valorIngresso = valorIngresso; }
-}
+} //[cite: 3]
