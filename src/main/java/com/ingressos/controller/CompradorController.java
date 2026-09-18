@@ -1,6 +1,7 @@
 package com.ingressos.controller;
 
 import com.ingressos.dto.CompraIngressoDTO;
+import com.ingressos.dto.IngressoCompradoResponse;
 import com.ingressos.model.IngressoComprado;
 import com.ingressos.service.IngressoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,7 +33,14 @@ public class CompradorController {
 
     @GetMapping
     @Operation(summary = "Listar ingressos do usuário logado")
-    public List<IngressoComprado> listarMeusIngressos() {
+    public List<IngressoCompradoResponse> listarMeusIngressos() {
         return ingressoService.listarMeusIngressos(getUsuarioAutenticadoId());
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Cancelar uma compra do comprador autenticado")
+    public void cancelarIngresso(@PathVariable Long id) {
+        ingressoService.cancelarCompra(id, getUsuarioAutenticadoId());
     }
 }

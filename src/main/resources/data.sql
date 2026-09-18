@@ -15,6 +15,10 @@ UPDATE eventos
 SET vendedor_id = NULL
 WHERE titulo LIKE 'Evento demonstrativo %';
 
+UPDATE compras
+SET status = 'CONFIRMADA'
+WHERE status IS NULL;
+
 INSERT INTO ingressos (evento_id, quantidade, valor)
 SELECT e.id, 100, 49.90 + MOD(e.id, 5) * 10
 FROM eventos e

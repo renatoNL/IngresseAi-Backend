@@ -31,6 +31,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CRÍTICO: Libera o Preflight do CORS[cite: 3]
                 .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/docs").permitAll()
                 .requestMatchers(HttpMethod.GET, "/eventos").permitAll()
+                .requestMatchers(HttpMethod.GET, "/comprador/ingressos").hasRole("COMPRADOR")
+                .requestMatchers(HttpMethod.DELETE, "/comprador/ingressos/**").hasRole("COMPRADOR")
                 .requestMatchers("/admin/**").hasRole("VENDEDOR")
                 .anyRequest().authenticated()
             )

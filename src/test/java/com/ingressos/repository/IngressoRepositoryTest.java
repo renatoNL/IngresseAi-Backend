@@ -39,13 +39,13 @@ class IngressoCompradoRepositoryTest extends AbstractIntegrationTest {
         
         entityManager.flush();
 
-        List<IngressoComprado> compras = ingressoCompradoRepository.findByCompradorId(1L);
+        List<IngressoComprado> compras = ingressoCompradoRepository.findByCompradorIdOrderByIdAsc(1L);
         assertEquals(2, compras.size());
     }
 
     @Test
     void deveRetornarListaVaziaSeCompradorNaoTiverCompras() {
-        List<IngressoComprado> compras = ingressoCompradoRepository.findByCompradorId(99L);
+        List<IngressoComprado> compras = ingressoCompradoRepository.findByCompradorIdOrderByIdAsc(99L);
         assertTrue(compras.isEmpty());
     }
 }

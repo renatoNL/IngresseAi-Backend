@@ -31,23 +31,24 @@ public class UsuarioService {
     }
 
     public Usuario cadastrarUsuario(UsuarioRequestDTO dto) {
+        String cpfCnpj = normalizarCpfCnpj(dto.getCpfCnpj());
         if (!"COMPRADOR".equals(dto.getTipo()) && !"VENDEDOR".equals(dto.getTipo())) {
             throw new RegraNegocioException("Tipo de usuário não reconhecido.");
         }
-        if ("VENDEDOR".equals(dto.getTipo()) && (dto.getCpfCnpj() == null || !dto.getCpfCnpj().matches("\\d{14}") || dto.getCpfCnpj().matches("(\\d)\\1{13}"))) {
+        if ("VENDEDOR".equals(dto.getTipo()) && (cpfCnpj == null || !cpfCnpj.matches("\\d{14}") || cpfCnpj.matches("(\\d)\\1{13}"))) {
             throw new RegraNegocioException("CNPJ inválido.");
         }
-        if ("COMPRADOR".equals(dto.getTipo()) && (dto.getCpfCnpj() == null || !dto.getCpfCnpj().matches("\\d{11}") || dto.getCpfCnpj().matches("(\\d)\\1{10}"))) {
+        if ("COMPRADOR".equals(dto.getTipo()) && (cpfCnpj == null || !cpfCnpj.matches("\\d{11}") || cpfCnpj.matches("(\\d)\\1{10}"))) {
             throw new RegraNegocioException("CPF inválido.");
         }
 
-        if (usuarioRepository.findByCpfCnpj(dto.getCpfCnpj()).isPresent()) {
+        if (usuarioRepository.findByCpfCnpj(cpfCnpj).isPresent()) {
             throw new RegraNegocioException("CPF/CNPJ já cadastrado.");
         }
 
         Usuario usuario = new Usuario();
         usuario.setNomeCompleto(dto.getNomeCompleto());
-        usuario.setCpfCnpj(dto.getCpfCnpj());
+        usuario.setCpfCnpj(cpfCnpj);
         usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
         usuario.setTipo(dto.getTipo());
 
@@ -55,7 +56,7 @@ public class UsuarioService {
     }
 
     public String autenticar(String cpfCnpj, String senha) {
-        Usuario usuario = usuarioRepository.findByCpfCnpj(cpfCnpj)
+        Usuario usuario = usuarioRepository.findByCpfCnpj(normalizarCpfCnpj(cpfCnpj))
                 .orElseThrow(() -> new RegraNegocioException("Credenciais inválidas."));
 
         if (!passwordEncoder.matches(senha, usuario.getSenha())) {
@@ -71,5 +72,9 @@ public class UsuarioService {
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
                 .compact();
+    }
+
+    private String normalizarCpfCnpj(String cpfCnpj) {
+        return cpfCnpj == null ? null : cpfCnpj.replaceAll("\\D", "");
     }
 }

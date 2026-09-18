@@ -48,6 +48,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<Map<String, String>> handleAccessDenied(AcessoNegadoException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("erro", ex.getMessage()));
+    }
+
     @ExceptionHandler(LimiteRequisicaoExcedidoException.class)
     public ResponseEntity<Map<String, String>> handleRateLimit(LimiteRequisicaoExcedidoException ex) {
         Map<String, String> error = new HashMap<>();

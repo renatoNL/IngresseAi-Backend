@@ -35,6 +35,17 @@ class UsuarioServiceAutenticacaoTest {
     }
 
     @Test
+    void deveNormalizarMascaraDoCpfAntesDeConsultarUsuario() {
+        Usuario usuarioMock = new Usuario();
+        usuarioMock.setSenha("senhaCodificada");
+        when(repository.findByCpfCnpj("12345678909")).thenReturn(Optional.of(usuarioMock));
+        when(encoder.matches("senha123", "senhaCodificada")).thenReturn(false);
+
+        assertThrows(RegraNegocioException.class,
+                () -> service.autenticar("123.456.789-09", "senha123"));
+    }
+
+    @Test
     void deveBloquearAutenticacaoSeSenhaEstiverIncorreta() {
         Usuario usuarioMock = new Usuario();
         usuarioMock.setSenha("senhaCodificada");
