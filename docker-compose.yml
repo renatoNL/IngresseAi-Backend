@@ -36,9 +36,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DB_URL=${DB_URL:?DB_URL precisa ser configurada}
-      - DB_USERNAME=${DB_USERNAME:?DB_USERNAME precisa ser configurada}
-      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD precisa ser configurada}
+      - DB_URL=jdbc:postgresql://db:5432/ingresse_ai
+      - DB_USERNAME=admin
+      - DB_PASSWORD=admin
       - JWT_SECRET=${JWT_SECRET:-chave-super-secreta-para-jwt-com-mais-de-32-caracteres}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.6-flash}
