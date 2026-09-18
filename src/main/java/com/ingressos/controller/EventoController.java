@@ -19,12 +19,12 @@ public class EventoController {
         this.eventoService = eventoService;
     }
 
-    @GetMapping("/eventos/ofertas")
+    @GetMapping
     public List<Map<String, Object>> listarOfertas() {
         return eventoService.listarOfertas();
     }
 
-    @GetMapping("/eventos/meus")
+    @GetMapping("/meus")
     public List<Evento> listarMeusEventos() {
         return eventoService.listarEventosDoVendedor();
     }
