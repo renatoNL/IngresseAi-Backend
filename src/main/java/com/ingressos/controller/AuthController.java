@@ -2,6 +2,7 @@ package com.ingressos.controller;
 
 import com.ingressos.dto.LoginDTO;
 import com.ingressos.dto.UsuarioRequestDTO;
+import com.ingressos.dto.UsuarioResponseDTO;
 import com.ingressos.model.Usuario;
 import com.ingressos.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,8 +28,9 @@ public class AuthController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Cadastrar um novo usuário no sistema")
-    public Usuario registrar(@RequestBody @Valid UsuarioRequestDTO dto) {
-        return usuarioService.cadastrarUsuario(dto);
+    public UsuarioResponseDTO registrar(@RequestBody @Valid UsuarioRequestDTO dto) {
+        Usuario usuario = usuarioService.cadastrarUsuario(dto);
+        return new UsuarioResponseDTO(usuario.getId(), usuario.getNomeCompleto(), usuario.getCpfCnpj(), usuario.getTipo());
     }
 
     @PostMapping("/login")

@@ -4,6 +4,7 @@ package com.ingressos.service;
 import com.ingressos.dto.UsuarioRequestDTO;
 import com.ingressos.exception.RegraNegocioException;
 import com.ingressos.repository.UsuarioRepository;
+import com.ingressos.security.SensitiveDataCrypto;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -11,9 +12,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 class UsuarioServiceTest {
+    private static final String TEST_KEY = "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=";
     private final UsuarioRepository repository = mock(UsuarioRepository.class);
     private final PasswordEncoder encoder = mock(PasswordEncoder.class);
-    private final UsuarioService service = new UsuarioService(repository, encoder);
+    private final UsuarioService service = new UsuarioService(repository, encoder,
+            new SensitiveDataCrypto(TEST_KEY, TEST_KEY));
 
     @Test
     void deveBloquearCadastroComCpfComTodosDigitosIguais() {

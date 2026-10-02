@@ -39,7 +39,10 @@ services:
       - DB_URL=jdbc:postgresql://db:5432/ingresse_ai
       - DB_USERNAME=admin
       - DB_PASSWORD=admin
+      - JPA_DDL_AUTO=update
       - JWT_SECRET=${JWT_SECRET:-chave-super-secreta-para-jwt-com-mais-de-32-caracteres}
+      - DATA_ENCRYPTION_KEY=${DATA_ENCRYPTION_KEY}
+      - DATA_INDEX_KEY=${DATA_INDEX_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.6-flash}
     depends_on:

@@ -4,6 +4,7 @@ import com.ingressos.dto.UsuarioRequestDTO;
 import com.ingressos.exception.RegraNegocioException;
 import com.ingressos.model.Usuario;
 import com.ingressos.repository.UsuarioRepository;
+import com.ingressos.security.SensitiveDataCrypto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,7 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SensitiveDataCrypto sensitiveDataCrypto;
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -25,9 +27,11 @@ public class UsuarioService {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
+                          SensitiveDataCrypto sensitiveDataCrypto) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.sensitiveDataCrypto = sensitiveDataCrypto;
     }
 
     public Usuario cadastrarUsuario(UsuarioRequestDTO dto) {
@@ -42,13 +46,14 @@ public class UsuarioService {
             throw new RegraNegocioException("CPF inválido.");
         }
 
-        if (usuarioRepository.findByCpfCnpj(cpfCnpj).isPresent()) {
+        if (buscarPorDocumento(cpfCnpj).isPresent()) {
             throw new RegraNegocioException("CPF/CNPJ já cadastrado.");
         }
 
         Usuario usuario = new Usuario();
         usuario.setNomeCompleto(dto.getNomeCompleto());
         usuario.setCpfCnpj(cpfCnpj);
+        usuario.setCpfCnpjIndice(sensitiveDataCrypto.index(cpfCnpj));
         usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
         usuario.setTipo(dto.getTipo());
 
@@ -56,8 +61,14 @@ public class UsuarioService {
     }
 
     public String autenticar(String cpfCnpj, String senha) {
-        Usuario usuario = usuarioRepository.findByCpfCnpj(normalizarCpfCnpj(cpfCnpj))
+        String documentoNormalizado = normalizarCpfCnpj(cpfCnpj);
+        Usuario usuario = buscarPorDocumento(documentoNormalizado)
                 .orElseThrow(() -> new RegraNegocioException("Credenciais inválidas."));
+
+        if (usuario.getCpfCnpjIndice() == null) {
+            usuario.setCpfCnpjIndice(sensitiveDataCrypto.index(documentoNormalizado));
+            usuarioRepository.save(usuario);
+        }
 
         if (!passwordEncoder.matches(senha, usuario.getSenha())) {
             throw new RegraNegocioException("Credenciais inválidas.");
@@ -76,5 +87,17 @@ public class UsuarioService {
 
     private String normalizarCpfCnpj(String cpfCnpj) {
         return cpfCnpj == null ? null : cpfCnpj.replaceAll("\\D", "");
+    }
+
+    private java.util.Optional<Usuario> buscarPorDocumento(String documentoNormalizado) {
+        String indice = sensitiveDataCrypto.index(documentoNormalizado);
+        java.util.Optional<Usuario> usuario = usuarioRepository.findByCpfCnpjIndice(indice);
+        if (usuario.isPresent()) {
+            return usuario;
+        }
+
+        return usuarioRepository.findAll().stream()
+                .filter(candidato -> documentoNormalizado.equals(normalizarCpfCnpj(candidato.getCpfCnpj())))
+                .findFirst();
     }
 }
