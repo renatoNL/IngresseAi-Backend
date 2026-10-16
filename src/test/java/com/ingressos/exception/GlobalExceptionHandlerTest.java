@@ -23,4 +23,28 @@ class GlobalExceptionHandlerTest {
         assertNotNull(response.getBody());
         assertEquals("Erro de integridade no banco de dados: restrição violada (ex: limite de quantidade excedido).", response.getBody().get("erro"));
     }
+
+    @Test
+    void deveInformarErroAmigavelParaValorDeTransacaoInvalido() {
+        DataIntegrityViolationException exception = new DataIntegrityViolationException(
+                "violates check constraint \"chk_valor_positivo\"");
+
+        ResponseEntity<Map<String, String>> response = handler.handleDatabaseExceptions(exception);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("O valor da transação deve ser maior que zero.", response.getBody().get("erro"));
+    }
+
+    @Test
+    void deveInformarErroAmigavelParaContasDeTransacaoIguais() {
+        DataIntegrityViolationException exception = new DataIntegrityViolationException(
+                "violates check constraint \"chk_contas_diferentes\"");
+
+        ResponseEntity<Map<String, String>> response = handler.handleDatabaseExceptions(exception);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("A conta de origem não pode ser a mesma que a conta de destino.", response.getBody().get("erro"));
+    }
 }

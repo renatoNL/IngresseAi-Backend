@@ -29,9 +29,24 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> handleDatabaseExceptions(DataIntegrityViolationException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("erro", "Erro de integridade no banco de dados: restrição violada (ex: limite de quantidade excedido).");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        String mensagem = "Erro de integridade no banco de dados: restrição violada (ex: limite de quantidade excedido).";
+
+        if (containsConstraint(ex, "chk_valor_positivo")) {
+            mensagem = "O valor da transação deve ser maior que zero.";
+        } else if (containsConstraint(ex, "chk_contas_diferentes")) {
+            mensagem = "A conta de origem não pode ser a mesma que a conta de destino.";
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("erro", mensagem));
+    }
+
+    private boolean containsConstraint(Throwable exception, String constraintName) {
+        for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+            if (cause.getMessage() != null && cause.getMessage().contains(constraintName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @ExceptionHandler(RegraNegocioException.class)
