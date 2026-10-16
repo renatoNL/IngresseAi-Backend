@@ -1,0 +1,110 @@
+-- 1. CONFIGURAÇÕES INICIAIS E TIPOS
+SET password_encryption = 'scram-sha-256';
+
+CREATE TYPE tipo_usuario AS ENUM ('COMPRADOR', 'VENDEDOR');
+
+-- 2. TABELAS DO PROJETO INGRESSEAI (Com constraints de segurança do PDF)
+CREATE TABLE usuarios (
+    id BIGSERIAL PRIMARY KEY,
+    nome_completo VARCHAR(255) NOT NULL,
+    cpf_cnpj VARCHAR(20) NOT NULL UNIQUE,
+    cpf_cnpj_indice VARCHAR(64) UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    tipo tipo_usuario NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE eventos (
+    id BIGSERIAL PRIMARY KEY,
+    vendedor_id BIGINT NOT NULL,
+    titulo VARCHAR(255) NOT NULL,
+    descricao TEXT NOT NULL,
+    tipo_evento VARCHAR(50) NOT NULL, 
+    data_evento TIMESTAMP NOT NULL,
+    quantidade_ingressos INTEGER CHECK (quantidade_ingressos >= 0), 
+    quantidade_disponivel INTEGER CHECK (quantidade_disponivel >= 0),
+    valor_ingresso NUMERIC(10,2) CHECK (valor_ingresso >= 0),
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (vendedor_id) REFERENCES usuarios(id)
+);
+
+CREATE TABLE ingressos (
+    id BIGSERIAL PRIMARY KEY,
+    evento_id BIGINT NOT NULL,
+    quantidade INT NOT NULL CHECK (quantidade > 0 AND quantidade <= 4), 
+    valor DECIMAL(10, 2) NOT NULL CHECK (valor >= 0), 
+    FOREIGN KEY (evento_id) REFERENCES eventos(id)
+);
+
+CREATE TABLE compras (
+    id BIGSERIAL PRIMARY KEY,
+    comprador_id BIGINT NOT NULL,
+    ingresso_id BIGINT NOT NULL,
+    quantidade_comprada INT NOT NULL CHECK (quantidade_comprada > 0 AND quantidade_comprada <= 4),
+    data_compra TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (comprador_id) REFERENCES usuarios(id),
+    FOREIGN KEY (ingresso_id) REFERENCES ingressos(id)
+);
+
+-- 3. VIEWS DO PROJETO (Conceito de Ocultação do PDF)
+CREATE OR REPLACE VIEW vw_usuarios_atendimento AS
+SELECT id, nome_completo, tipo, criado_em
+FROM usuarios;
+
+-- 4. ROLES E PERMISSÕES DO PROJETO
+CREATE ROLE app_runtime LOGIN PASSWORD 'SENHA_FORTE_NOVA';
+CREATE ROLE atendimento LOGIN PASSWORD 'SenhaAtendimento123';
+
+GRANT CONNECT ON DATABASE ingresse_ai TO app_runtime;
+GRANT USAGE ON SCHEMA public TO app_runtime;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.usuarios, public.eventos, public.ingressos, public.compras TO app_runtime;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_runtime;
+
+GRANT CONNECT ON DATABASE ingresse_ai TO atendimento;
+GRANT USAGE ON SCHEMA public TO atendimento;
+GRANT SELECT ON public.vw_usuarios_atendimento TO atendimento;
+
+-- 5. INSERÇÃO DE DADOS INICIAIS
+INSERT INTO usuarios (nome_completo, cpf_cnpj, senha, tipo) 
+VALUES ('Vendedor Oficial', 'A1.B2C.D3E/0001-F4', '$2a$10$W2n...HashBCryptExemplo', 'VENDEDOR');
+
+INSERT INTO eventos (titulo, descricao, tipo_evento, data_evento, quantidade_ingressos, quantidade_disponivel, valor_ingresso, vendedor_id) 
+VALUES 
+('Festival de Tecnologia', 'Evento sobre desenvolvimento e segurança', 'Conferência', '2026-11-15 09:00:00', 500, 500, 150.00, currval('usuarios_id_seq')),
+('Show Acústico', 'Apresentação ao vivo', 'Show', '2026-12-10 20:00:00', 300, 300, 80.00, currval('usuarios_id_seq')),
+('Festival de Verão', 'O maior festival do ano', 'SHOW', '2026-12-20 18:00:00', 100000, 100000, 150.00, currval('usuarios_id_seq')),
+('Clássico de Domingo', 'Partida decisiva', 'ESPORTE', '2026-11-15 16:00:00', 50000, 50000, 80.00, currval('usuarios_id_seq')),
+('Stand-up Comedy', 'Noite de risadas', 'TEATRO', '2026-10-10 20:00:00', 500, 500, 45.00, currval('usuarios_id_seq'));
+
+INSERT INTO ingressos (evento_id, quantidade, valor) VALUES
+(1, 4, 150.00),
+(2, 4, 80.00);
+
+
+-- ====================================================================================
+-- 6. RESOLUÇÃO LITERAL DA ATIVIDADE DO PDF (Tabelas e Requisitos Fictícios Específicos)
+-- ====================================================================================
+
+-- EXERCÍCIO 1: Restrições de Validação
+CREATE TABLE Transacoes (
+    ID SERIAL PRIMARY KEY,
+    Conta_Origem VARCHAR(50) NOT NULL,
+    Conta_Destino VARCHAR(50) NOT NULL,
+    Valor DECIMAL(15,2) NOT NULL,
+    CONSTRAINT chk_valor_positivo CHECK (Valor > 0),
+    CONSTRAINT chk_contas_diferentes CHECK (Conta_Origem <> Conta_Destino)
+);
+
+-- EXERCÍCIO 2: Ocultação Estrutural e Permissões
+CREATE TABLE Funcionarios (
+    ID SERIAL PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    CPF VARCHAR(14) NOT NULL UNIQUE,
+    Salario DECIMAL(10,2) NOT NULL,
+    Departamento VARCHAR(50) NOT NULL
+);
+
+CREATE VIEW vw_funcionarios_publico AS 
+SELECT Nome, Departamento FROM Funcionarios;
+
+GRANT SELECT ON vw_funcionarios_publico TO atendimento;
